@@ -7,8 +7,9 @@ from PIL import ImageTk,Image
 import pytesseract
 import cv2
 import numpy as np
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 per = 10
-imgQ = cv2.imread('.//images/image_standard.jpg')
+imgQ = cv2.imread('.//images/1411.jpg')
 h, w, c = imgQ.shape
 # cette fonction permet de redementioner la'image et
 def traitement_img(myimg) :
@@ -30,7 +31,7 @@ def traitement_img(myimg) :
 # cette fonction permet de transformer l'image a une image grer
 def grayscale(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-# detection des visages dans une image
+# detection des visages dans un image
 def detection_image(gray):
     class_Cascade = cv2.CascadeClassifier(".//images/haarcascade_frontalface_alt2.xml") # model d'entinement sur les visage d'humain
     faces = class_Cascade.detectMultiScale( gray, scaleFactor=1.1, minNeighbors=5,minSize=(60,60), flags=cv2.CASCADE_SCALE_IMAGE)
@@ -45,7 +46,7 @@ def thresholding(image):
 def tere_chaine(image, x, y, w, h):
     region_Nom = image[y:h, x:w]
     region_Nom = remove_noise(thresholding(grayscale(region_Nom)))
-    NomCI = pytesseract.image_to_string(region_Nom)
+    NomCI = pytesseract.image_to_string(region_Nom,lang='aze+eng')
     NomCI = NomCI.replace('\n', '')
     NomCI = NomCI.strip()
     return NomCI
@@ -56,7 +57,8 @@ def open():
     logo2.img = img2  # Keep a reference in case this code put is in a function.
     logo2.place(x=316, y=0)  # Place a la bas de l'interface
 
-    imagelien = filedialog.askopenfilename(initialdir="C://Users/alla_ismail/Pictures/scanner", title="choisir l'image",filetypes=(("ex png", "*.png"), ("ex jpg", "*.jpg"),("tous les ex", "*.*")))
+
+    imagelien = filedialog.askopenfilename(initialdir="", title="choisir l'image",filetypes=(("ex png", ".png"), ("ex jpg", ".jpg"),("tous les ex", ".")))
     imagecv = cv2.imread(imagelien)
     image = traitement_img(imagecv)
     gray = grayscale(image)
@@ -90,7 +92,7 @@ def open():
     Label(app, text=adress,bg="white", font=("Courier", 13)).place(x=246, y=300)
     f=faces[0]
     x = random()
-    lien = 'C:/Users/alla_ismail/PycharmProjects/projet/images/resulta' + str(x) + '.png'
+    lien = './/images_stocke/resulta' + str(x) + '.png'
     cv2.imwrite(lien, image[f[1]:f[1] + f[3], f[0]:f[0] + f[2]])
     img = ImageTk.PhotoImage(Image.open(lien).resize((160,160), Image.ANTIALIAS) )
     lbl =Label(app, image=img)
@@ -100,7 +102,7 @@ def open():
 def commiter():
     global conn, cursor
     try:
-        conn = MC.connect(host='localhost', database='projet', user='root', password='')
+        conn = MC.connect(host='localhost', database='projet1', user='root', password='')
         cursor = conn.cursor()
         req = 'INSERT INTO carte(cin,nom,prenom, date_nai,adresse,image) VALUES (%s,%s,%s,%s,%s,%s)'
         data=( cin, nom , prenom,date,adress,lien)
@@ -108,7 +110,7 @@ def commiter():
         conn.commit()
         messagebox.showinfo("information", "les données sont enregistrer avec succ ées")
     except MC.Error as err:
-        messagebox.showerror("Error", "les données ne sont pas enregistrer \n s'il vous plait verifier la conixion \n de la base de données")
+        messagebox.showerror("Error", "les données ne sont pas enregistrer \n s'il vous plait verifier la connexion \n avec la base de données")
     finally:
         if conn.is_connected():
             cursor.close()
@@ -147,5 +149,5 @@ Label(app, text="Adresse de Naissance  :", font=("Courier", 13)).place(x=6, y=30
 Button(app, text="valider", bg="green", font=("Courier,12"),width=20,height=2, command=commiter).place(x=442,  y=346)
 Button(app, text="la personne suivant", bg="orange", font=("Courier,12"),width=20, height=2, command=open).place(x=224, y=346)
 Button(app, text="Quitter", bg="red", font=("Courier,12"), width=20, height=2, command=quit).place(x=6, y=346)
-Button(app, text="** choisir l'image **", bg='yellow', width=20, height=3, command=open).place(x=318, y=114)
+Button(app, text="* choisir l'image *", bg='yellow', width=20, height=3, command=open).place(x=318, y=114)
 app.mainloop()
